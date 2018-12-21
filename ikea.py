@@ -4,34 +4,32 @@ import re
 import csv
 
 
-# вводим ссылку на страницу, которую будем парсить
+# here is the link which we are going to parse
 url = 'https://www.ikea.com/ru/ru/catalog/categories/departments/living_room/10705/'
 
-# получаем html-код
+# get html-code
 page = requests.get(url).text
+
+# create the list where we're going to save the results of parsing
+results = []
 
 def parsing(page):
     soup = BeautifulSoup(page, features="html.parser")
 
-    # находим тег, в котором заключены данные по всем единицам товара
+    # find tag containing information about all items we're going to parse
     product_block = soup.find('div', class_='productLists adproductLists')
 
-    # находим теги, в каждом из которых заключена информация по каждому товару
+    # find tags each of which contains information about one item
     items = product_block.find_all('div', class_='productDetails ')
 
-    # создаём список, в котором будем сохранять результаты
-    global results
-    results = []
-
-    # далее извлекаем из нужных тегов информацию о каждом товаре
-    k = 0
+    # further we get text information placed between that tags
 
     for item in items:
         item_name = item.find('span', class_='productTitle floatLeft').text
         item_desc = item.find('span', class_='productDesp').text
         item_price = item.find('span', class_='price regularPrice').text
 
-        # при помощи модуля re удаляем лишние пробелы из строки цены
+        # with the help of module re delete unwanted spaces from the price line
         item_price = re.sub('[А-я, \s]', '', item_price)
 
         link = item.find('a').get('href')
@@ -48,10 +46,10 @@ def parsing(page):
 
     return results
 
-
 parsing(page)
 
-# создаём функцию, которая будет создавать csv-файл и записывать в него данные
+# define function which will create new csv-file and write data in it
+
 def save(results, path):
     with open('parsing.csv', 'w', newline='') as csvfile:
         writer = csv.writer(csvfile)
